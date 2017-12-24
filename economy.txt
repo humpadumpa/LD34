@@ -1,0 +1,16 @@
+4s/slot
+10s buildtime
+
+
+powercell  40 power
+missilefactory  -20 power
+gattlingturret  -10 power
+missilebattery  -5 power
+
+
+missilefactory production time 2s
+missilebattery reload time 4s
+gattlingturret reload time 1s
+
+missile damage 1/2
+gattling damagen 1/2
