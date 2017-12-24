@@ -1,6 +1,6 @@
 
 /*
- * Junk.java
+ * Building.java
  *
  * Dec 13, 2015
  */

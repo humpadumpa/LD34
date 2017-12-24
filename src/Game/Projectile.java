@@ -1,6 +1,6 @@
 
 /*
- * Shot.java
+ * Projectile.java
  *
  * Dec 13, 2015
  */
