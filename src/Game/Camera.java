@@ -5,6 +5,7 @@
  */
 package Game;
 
+import Game.Entities.Entity;
 import org.newdawn.slick.Graphics;
 
 /* 

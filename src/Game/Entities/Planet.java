@@ -4,14 +4,21 @@
  *
  * Dec 12, 2015
  */
-package Game;
+package Game.Entities;
 
+import Game.Buildings.Industry;
+import Game.Buildings.Weapon;
+import Game.Buildings.Building;
 import static Game.Settings.*;
 import java.util.ArrayList;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
-import Game.Industry.*;
-import Game.Weapon.*;
+import Game.Buildings.Industry.*;
+import Game.Buildings.Weapon.*;
+import Game.Camera;
+import Game.Interface;
+import Game.Main;
+import Game.Rect;
 import org.newdawn.slick.opengl.renderer.Renderer;
 import org.newdawn.slick.opengl.renderer.SGL;
 

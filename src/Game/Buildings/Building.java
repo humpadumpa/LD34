@@ -4,10 +4,13 @@
  *
  * Dec 13, 2015
  */
-package Game;
+package Game.Buildings;
 
+import Game.Camera;
+import Game.Entities.Orbital;
 import static Game.Settings.*;
-import Game.Planet.Team;
+import Game.Entities.Planet.Team;
+import Game.Rect;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.newdawn.slick.Color;

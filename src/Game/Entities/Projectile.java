@@ -4,9 +4,13 @@
  *
  * Dec 13, 2015
  */
-package Game;
+package Game.Entities;
 
-import Game.Planet.Team;
+import Game.Camera;
+import Game.Interface;
+import Game.Main;
+import Game.Entities.Planet.Team;
+import Game.Rect;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;

@@ -6,8 +6,15 @@
  */
 package Game;
 
+import Game.AI.AI_masterDrone;
+import Game.Entities.Entity;
+import Game.Entities.Projectile;
+import Game.Entities.Planet;
+import Game.Buildings.Industry;
+import Game.Buildings.Weapon;
+import Game.Buildings.Building;
 import static Game.Settings.*;
-import Game.Planet.Team;
+import Game.Entities.Planet.Team;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;

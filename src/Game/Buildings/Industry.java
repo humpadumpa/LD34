@@ -3,8 +3,9 @@
     *
     *   Dec 13, 2015
     */
-package Game;
+package Game.Buildings;
 
+import Game.Buildings.Building;
 import static Game.Settings.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +56,7 @@ public abstract class Industry extends Building {
 		
 		private long timeLastProd;
 		
-		Factory(int player) {
+		public Factory(int player) {
 			super(player == 0 ? FACTORY_PATH : FACTORY_P2_PATH, Color.white);
 			timeLastProd = System.currentTimeMillis();
 		}

@@ -4,9 +4,16 @@
  *
  * Dec 13, 2015
  */
-package Game;
+package Game.Buildings;
 
-import static Game.Industry.BUILDING_TYPE;
+import Game.Buildings.Building;
+import Game.Camera;
+import Game.Entities.Entity;
+import Game.Interface;
+import Game.Main;
+import Game.Entities.Projectile;
+import Game.Rect;
+import static Game.Buildings.Industry.BUILDING_TYPE;
 import static Game.Settings.*;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;

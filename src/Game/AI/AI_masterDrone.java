@@ -3,7 +3,7 @@
     *
     *   Dec 15, 2015
     */
-package Game;
+package Game.AI;
 
 import static Game.Settings.*;
 import Game.Interface;
@@ -17,9 +17,9 @@ public class AI_masterDrone {
 
 	private static KeyListener interfaceKeyListener;
 
-	int AI_B1, AI_B2;
+	private int AI_B1, AI_B2;
 	
-	AI_masterDrone(int AI_B1, int AI_B2) {
+	public AI_masterDrone(int AI_B1, int AI_B2) {
 		this.AI_B1 = AI_B1;
 		this.AI_B2 = AI_B2;
 	}

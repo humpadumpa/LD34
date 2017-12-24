@@ -4,7 +4,9 @@
  *
  * Dec 12, 2015
  */
-package Game;
+package Game.Entities;
+
+import Game.Entities.Planet;
 
 /* 
  * @author Per Eresund

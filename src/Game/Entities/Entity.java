@@ -1,7 +1,9 @@
 
-package Game;
+package Game.Entities;
 
-import Game.Planet.Team;
+import Game.Camera;
+import Game.Entities.Planet.Team;
+import Game.Rect;
 import org.newdawn.slick.Graphics;
 
 /**

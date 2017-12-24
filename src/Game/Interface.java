@@ -5,6 +5,9 @@
     */
 package Game;
 
+import Game.AI.AI_masterDrone;
+import Game.Entities.Planet;
+import Game.Buildings.Building;
 import static Game.Game.BUILDSLOTS;
 import static Game.Settings.*;
 import java.util.ArrayList;
@@ -33,21 +36,21 @@ public class Interface implements KeyListener {
 	private static final int AI_B1 = 9999;
 	private static final int AI_B2 = 10000;
 	
-	static final byte BUTTON_COMMAND_INF = 1;
-	static final byte BUTTON_COMMAND_INF_CELL = 2;
-	static final byte BUTTON_COMMAND_INF_FACTORY = 3;
+	public static final byte BUTTON_COMMAND_INF = 1;
+	public static final byte BUTTON_COMMAND_INF_CELL = 2;
+	public static final byte BUTTON_COMMAND_INF_FACTORY = 3;
 	
-	static final byte BUTTON_COMMAND_MIL = 4;
-	static final byte BUTTON_COMMAND_MIL_GATLING = 5;
-	static final byte BUTTON_COMMAND_MIL_MISSILE = 6;
+	public static final byte BUTTON_COMMAND_MIL = 4;
+	public static final byte BUTTON_COMMAND_MIL_GATLING = 5;
+	public static final byte BUTTON_COMMAND_MIL_MISSILE = 6;
 	
-	static final byte BUTTON_P2_COMMAND_INF = 7;
-	static final byte BUTTON_P2_COMMAND_INF_CELL = 8;
-	static final byte BUTTON_P2_COMMAND_INF_FACTORY = 9;
+	public static final byte BUTTON_P2_COMMAND_INF = 7;
+	public static final byte BUTTON_P2_COMMAND_INF_CELL = 8;
+	public static final byte BUTTON_P2_COMMAND_INF_FACTORY = 9;
 	
-	static final byte BUTTON_P2_COMMAND_MIL = 10;
-	static final byte BUTTON_P2_COMMAND_MIL_GATLING = 11;
-	static final byte BUTTON_P2_COMMAND_MIL_MISSILE = 12;
+	public static final byte BUTTON_P2_COMMAND_MIL = 10;
+	public static final byte BUTTON_P2_COMMAND_MIL_GATLING = 11;
+	public static final byte BUTTON_P2_COMMAND_MIL_MISSILE = 12;
 	
 	private static final float P1_BUTTON_POSITION = 0.25f;
 	private static final float P2_BUTTON_POSITION = 0.75f;
