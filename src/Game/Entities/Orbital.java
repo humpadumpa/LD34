@@ -15,17 +15,15 @@ public abstract class Orbital implements Entity {
 	public abstract double getImgRotation();
 	
 	private boolean clockwise;
-	private boolean origClockwise;
 	private int range;
-	private long moveT0, moveT1;
-	private double speed, radians, startRadians, targetRadians, width, height;
+	private double speed, radians, width, height;
 	private Planet target;
 	
 	public void circleAround(Planet target, int range, double speed, double radians, boolean clockwise, double width, double height) {
 		this.target = target;
 		this.range = range;
 		this.speed = speed;
-		this.origClockwise = this.clockwise = clockwise;
+		this.clockwise = clockwise;
 		this.width = width;
 		this.height = height;
 		setRadians(radians);
@@ -97,54 +95,10 @@ public abstract class Orbital implements Entity {
 //		return dy;
 	}
 	
-	private boolean isMoving() {
-		if (moveT1 == 0) return false;
-		if (System.currentTimeMillis() >= moveT1) {
-			moveT1 = 0;
-			double radians = targetRadians + (clockwise ? speed : -speed) / 5000D;
-//			if (radians < 0) radians = Math.PI*2 - radians;
-			setRadians(radians);
-		}
-		return moveT1 != 0;
-	}
-	
-	private void determineDirection() {
-		
-		double clockwiseDist = getRadians(Math.PI*2D - (targetRadians - startRadians));
-		double counterClockwiseDist = getRadians(targetRadians - startRadians);
-		
-		clockwise = clockwiseDist < counterClockwiseDist;
-		
-		System.out.println("R0: " + getRadians(startRadians) + ", R1: " + getRadians(targetRadians));
-		System.out.println("Direction: " + (clockwise ? "clockwise" : "counter-clockwise"));
-	}
-	
-	public void moveTowardsRadians(double radians, long time) {
-		startRadians = this.radians;
-		targetRadians = radians;
-		
-		moveT0 = System.currentTimeMillis();
-		moveT1 = moveT0 + time;
-		
-		determineDirection();
-	}
-	
 	private void updateRadians() {
-		double addRad = (origClockwise ? speed : -speed) / 5000D;
 		if (speed == 0) {
-		} else if (isMoving()) {
-			targetRadians = targetRadians + addRad;
-//			long timeLeft = moveT1 - System.currentTimeMillis();
-//			long totTime = moveT1 - moveT0;
-			
-//			if (clockwise) {
-				setRadians(startRadians + (targetRadians - startRadians) * ((double)(System.currentTimeMillis() - moveT0) / (double)(moveT1 - moveT0)));
-//			} else {
-//				setRadians(startRadians + (targetRadians - startRadians) * ((double)(moveT1 - moveT0) / (double)(System.currentTimeMillis() - moveT0)));
-//			}
 		} else {
-			clockwise = origClockwise;
-			addRad = (clockwise ? speed : -speed) / 5000D;
+			double addRad = (clockwise ? speed : -speed) / 5000D;
 			double newRad = radians + addRad;
 			setRadians(newRad);
 		}
