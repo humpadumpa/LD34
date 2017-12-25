@@ -27,10 +27,10 @@ public abstract class Weapon extends Building {
 	public static final int BUILDING_TYPE = 1; 
 	
 	private int getShotX(Image img) {
-		return (int)(getRect().getCenterX() + img.getWidth()/2d * Math.cos(getRadians()));
+		return (int)(getRect().getCenterX() + img.getWidth()/2d * Math.cos(getRotation()));
 	}
 	private int getShotY(Image img) {
-		return (int)(getRect().getCenterY() + img.getHeight()/2d * Math.sin(getRadians()));
+		return (int)(getRect().getCenterY() + img.getHeight()/2d * Math.sin(getRotation()));
 	}
 	
 //	private int getShotX(Image img) {
@@ -41,11 +41,11 @@ public abstract class Weapon extends Building {
 //	}
 	
 	private int getShotX(int shotlen) {
-		return (int)(getRect().getCenterX() + shotlen * Math.cos(getRadians()));
+		return (int)(getRect().getCenterX() + shotlen * Math.cos(getRotation()));
 	}
 	
 	private int getShotY(int shotlen) {
-		return (int)(getRect().getCenterY() + shotlen * Math.sin(getRadians()));
+		return (int)(getRect().getCenterY() + shotlen * Math.sin(getRotation()));
 	}
 	
 	private long lastShot;
@@ -63,6 +63,7 @@ public abstract class Weapon extends Building {
 	protected abstract void shoot();
 	protected abstract int getWeaponType();
 	protected abstract void setTarget();
+	protected abstract double getRotation();
 	
 	
 	@Override
@@ -89,9 +90,9 @@ public abstract class Weapon extends Building {
 			super(player == 0 ? GATLING_PATH : GATLING_P2_PATH, Color.white);
 			reachRect = new Rect(0, 0, GATLING_REACH*2, GATLING_REACH*2, true);
 		}
-	
+
 		@Override
-		public double getRadians() {
+		protected double getRotation() {
 			return rotation;
 		}
 	
@@ -145,7 +146,7 @@ public abstract class Weapon extends Building {
 			}
 			if (target == null) {
 				aimTarget = null;
-				setRotation(getRadians());
+				setRotation(getRotation());
 				return;
 			}
 			aimTarget = target;
@@ -153,7 +154,7 @@ public abstract class Weapon extends Building {
 				setRotation(reachRect.getAngleTo(aimTarget.getRect()));
 			} else {
 				aimTarget = null;
-				setRotation(getRadians());
+				setRotation(getRotation());
 			}
 		}
 		
@@ -246,9 +247,9 @@ public abstract class Weapon extends Building {
 		private void setRotation(double rotation) {
 			this.rotation = rotation % (Math.PI*2D);
 		}
-	
+
 		@Override
-		public double getRadians() {
+		protected double getRotation() {
 			return rotation;
 		}
 	
@@ -295,7 +296,7 @@ public abstract class Weapon extends Building {
 			}
 			if (target == null) {
 				aimTarget = null;
-				setRotation(getRadians());
+				setRotation(getRotation());
 				return;
 			}
 			aimTarget = target;
@@ -303,7 +304,7 @@ public abstract class Weapon extends Building {
 				setRotation(reachRect.getAngleTo(aimTarget.getRect()));
 			} else {
 				aimTarget = null;
-				setRotation(getRadians());
+				setRotation(getRotation());
 			}
 		}
 		

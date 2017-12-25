@@ -56,9 +56,9 @@ public class Settings {
 	
 	
 	// -----  Buildings general speccs  ----- \\
-	public static final int MAXHP = 5;
+	public static final int MAXHP = 50;
 	public static final int BUILD_HP = 1;
-	public static final int BUILD_TIME = 500;
+	public static final int BUILD_TIME = 5000;
 	public static final int BUILD_INTERVAL = (int)((double)BUILD_TIME * ((double)BUILD_HP/(double)MAXHP));
 	
 	public static final long ENERGY_DRAIN_GATLING = 10;

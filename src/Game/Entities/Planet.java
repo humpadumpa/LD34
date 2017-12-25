@@ -15,6 +15,7 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import Game.Buildings.Industry.*;
 import Game.Buildings.Weapon.*;
+import Game.Buildings.WeaponRing;
 import Game.Camera;
 import Game.Interface;
 import Game.Main;
@@ -31,7 +32,8 @@ public class Planet extends Orbital {
 	private ArrayList<Industry> industries;
 	private ArrayList<Weapon> weapons;
 	
-	private Industry[][] buildingLayers;
+	private Industry[][] industryLayers;
+	private WeaponRing weaponRing;
 	
 	private int industrySlots;
 	
@@ -52,6 +54,7 @@ public class Planet extends Orbital {
 		team = new Team();
 		maxHp = PLANET_SIZE_FACTOR*PLANET_INTEGRITY_FACTOR*8;
 		hp = maxHp;
+		weaponRing = new WeaponRing();
 	}
 	
 	@Override
@@ -129,12 +132,12 @@ public class Planet extends Orbital {
 		industries = new ArrayList<Industry>();
 		weapons = new ArrayList<Weapon>();
 		
-		buildingLayers = new Industry[(int)(Math.floor(r/32f))][];
-		buildingLayers[0] = new Industry[1];
+		industryLayers = new Industry[(int)(Math.floor(r/32f))][];
+		industryLayers[0] = new Industry[1];
 		industrySlots = 1;
 		
-		for (int i = 1; i < buildingLayers.length; i++) {
-			buildingLayers[i] = new Industry[i*6];
+		for (int i = 1; i < industryLayers.length; i++) {
+			industryLayers[i] = new Industry[i*6];
 			industrySlots += i*6;
 //			for (int j = 0; j < i*6; j++) {
 //				Industry ind = Industry.random(1);
@@ -198,18 +201,19 @@ public class Planet extends Orbital {
 		team.lostBuilding();
 		Main.game.removeEntity(b);
 		boolean found = false;
-		for (int layer = 0; layer < buildingLayers.length; layer++) {
-			for (int n = 0; n < buildingLayers[layer].length; n++) {
-				if (buildingLayers[layer][n] == b) {
-					buildingLayers[layer][n] = null;
-					found = true; break;
+		for (int layer = 0; layer < industryLayers.length; layer++) {
+			for (int n = 0; n < industryLayers[layer].length; n++) {
+				if (industryLayers[layer][n] == b) {
+					industryLayers[layer][n] = null;
+					found = true;
+					break;
 				}
 			}
 			if (found) break;
 		}
 		
 		boolean isConstructed = b.isConstructed();
-		if (b instanceof Industry) {
+		if (b.getBuildingType() == Industry.BUILDING_TYPE) {
 			industries.remove((Industry)b);
 			if (b instanceof Powercell && isConstructed) {
 				energyCap -= ENERGY_CAP_POWERCELL;
@@ -222,7 +226,8 @@ public class Planet extends Orbital {
 				energyDrain -= ENERGY_DRAIN_FACTORY;
 			}
 		}
-		else if (b instanceof Weapon) {
+		else if (b.getBuildingType() == Weapon.BUILDING_TYPE) {
+			weaponRing.removeWeapon((Weapon)b);
 			weapons.remove((Weapon)b);
 			if (b instanceof Gatling) {
 				energyDrain -= ENERGY_DRAIN_GATLING;
@@ -237,10 +242,21 @@ public class Planet extends Orbital {
 	}
 	
 	public void addWeapon(Weapon w) {
+		double addRadians = 0;
+		if (weapons.size() > 0) {
+			Weapon referenceWeapon = weapons.get(0);
+			double referenceRadians = weaponRing.getWeaponRadians(referenceWeapon);
+			double currentRadians = referenceWeapon.getRadians();
+			addRadians = currentRadians - referenceRadians;
+		}
+		
 		w.setTeam(team);
 		weapons.add(w);
-		w.circleAround(this, getRadius() + w.getRadius(), BUILDING_ORBIT_SPEED, Math.random() * Math.PI*2D, BUILDING_ORBIT_CLOCKWISE, 1D, 1D);
-		spawnWeapon(w);
+		
+		int[] pos = weaponRing.addWeapon(w);
+		double radians = weaponRing.getWeaponRadians(pos[0], pos[1]) + addRadians;
+		
+		spawnWeapon(w, radians);
 	}
 	
 	public void addIndustry(Industry i) {
@@ -249,27 +265,31 @@ public class Planet extends Orbital {
 		spawnIndustry(i);
 	}
 	
-	private void spawnWeapon(Weapon w) {
+	private void spawnWeapon(Weapon w, double radian) {
 		if(w instanceof Gatling) {
 			energyDrain += ENERGY_DRAIN_GATLING;
 		}
 		else if (w instanceof Battery) {
 			energyDrain += ENERGY_DRAIN_BATTERY;
 		}
-		for (int i = 0, max = weapons.size(); i < max; i++) {
-			weapons.get(i).moveTowardsRadians((double)i / (double)max * Math.PI*2D, System.currentTimeMillis() + 1000L);
-		}
+		
+		w.circleAround(this, getRadius() + w.getRadius(), BUILDING_ORBIT_SPEED, radian, BUILDING_ORBIT_CLOCKWISE, 1D, 1D);
+//		System.out.println("\n\n");
+//		for (int i = 0, max = weapons.size(); i < max; i++) {
+//			weapons.get(i).moveTowardsRadians((double)i / (double)max * Math.PI*2D, 1000L);
+//		}
 	}
+	
 	private void spawnIndustry(Industry i) {
 		if(i instanceof Factory) {
 			energyDrain += ENERGY_DRAIN_FACTORY;
 		}
-		for (int layer = 0; layer < buildingLayers.length; layer++) {
-			for (int n = 0; n < buildingLayers[layer].length; n++) {
+		for (int layer = 0; layer < industryLayers.length; layer++) {
+			for (int n = 0; n < industryLayers[layer].length; n++) {
 				
-				if (buildingLayers[layer][n] == null) {
-					i.circleAround(this, layer * i.getRadius()*2, BUILDING_ORBIT_SPEED, getRadians(layer)+n*Math.PI*2D/buildingLayers[layer].length, true, 1D, 1D);
-					buildingLayers[layer][n] = i;
+				if (industryLayers[layer][n] == null) {
+					i.circleAround(this, layer * i.getRadius()*2, BUILDING_ORBIT_SPEED, getRadians(layer)+n*Math.PI*2D/industryLayers[layer].length, true, 1D, 1D);
+					industryLayers[layer][n] = i;
 					return;
 				}
 			}
@@ -294,9 +314,9 @@ public class Planet extends Orbital {
 	
 	private double getRadians(int layer) {
 		
-		for (int i = 0; i < buildingLayers[layer].length; i++) {
-			if (buildingLayers[layer][i] != null) {
-				return buildingLayers[layer][i].getRadians()-i/buildingLayers[layer].length*Math.PI*2D;
+		for (int i = 0; i < industryLayers[layer].length; i++) {
+			if (industryLayers[layer][i] != null) {
+				return industryLayers[layer][i].getRadians()-i/industryLayers[layer].length*Math.PI*2D;
 			}
 		}
 		return 0;

@@ -18,7 +18,7 @@ public abstract class Orbital implements Entity {
 	private boolean origClockwise;
 	private int range;
 	private long moveT0, moveT1;
-	private double speed, radians, startRadians, endRadians, width, height;
+	private double speed, radians, startRadians, targetRadians, width, height;
 	private Planet target;
 	
 	public void circleAround(Planet target, int range, double speed, double radians, boolean clockwise, double width, double height) {
@@ -33,9 +33,19 @@ public abstract class Orbital implements Entity {
 		this.update();	//Check if causing bugs when planet-update is finished
 	}
 	
+	public static double getRadians(double radians) {
+		if (radians != radians) return 0;
+		
+		while (radians < 0) {
+			radians += Math.PI*2D;
+		}
+		radians = radians % (Math.PI*2D);
+		
+		return radians;
+	}
+	
 	public void setRadians(double radians) {
-		while (radians < 0) radians += Math.PI*2D;
-		this.radians = radians % (Math.PI*2D);
+		this.radians = getRadians(radians);
 	}
 	
 	public void setSpeed(double speed) {
@@ -91,32 +101,46 @@ public abstract class Orbital implements Entity {
 		if (moveT1 == 0) return false;
 		if (System.currentTimeMillis() >= moveT1) {
 			moveT1 = 0;
-			radians = endRadians + (clockwise ? speed : -speed) / 5000D;
+			double radians = targetRadians + (clockwise ? speed : -speed) / 5000D;
 //			if (radians < 0) radians = Math.PI*2 - radians;
-			while (radians < 0) radians += Math.PI*2D;
+			setRadians(radians);
 		}
 		return moveT1 != 0;
 	}
 	
-	public void moveTowardsRadians(double radians, long time) {
-		startRadians = this.radians;
-		endRadians = radians;
-		clockwise = ((endRadians - startRadians) > (Math.PI + (startRadians - endRadians)));
-		moveT0 = System.currentTimeMillis();
-		moveT1 = time;
+	private void determineDirection() {
+		
+		double clockwiseDist = getRadians(Math.PI*2D - (targetRadians - startRadians));
+		double counterClockwiseDist = getRadians(targetRadians - startRadians);
+		
+		clockwise = clockwiseDist < counterClockwiseDist;
+		
+		System.out.println("R0: " + getRadians(startRadians) + ", R1: " + getRadians(targetRadians));
+		System.out.println("Direction: " + (clockwise ? "clockwise" : "counter-clockwise"));
 	}
 	
-	@Override
-	public void update() {
-		if (target == null) return;
-		double addRad = (clockwise ? speed : -speed) / 5000D;
+	public void moveTowardsRadians(double radians, long time) {
+		startRadians = this.radians;
+		targetRadians = radians;
+		
+		moveT0 = System.currentTimeMillis();
+		moveT1 = moveT0 + time;
+		
+		determineDirection();
+	}
+	
+	private void updateRadians() {
+		double addRad = (origClockwise ? speed : -speed) / 5000D;
 		if (speed == 0) {
 		} else if (isMoving()) {
-			endRadians = endRadians + addRad;
+			targetRadians = targetRadians + addRad;
+//			long timeLeft = moveT1 - System.currentTimeMillis();
+//			long totTime = moveT1 - moveT0;
+			
 //			if (clockwise) {
-				setRadians(startRadians + (endRadians - startRadians) * ((double)(System.currentTimeMillis() - moveT0) / (double)(moveT1 - moveT0)));
+				setRadians(startRadians + (targetRadians - startRadians) * ((double)(System.currentTimeMillis() - moveT0) / (double)(moveT1 - moveT0)));
 //			} else {
-//				setRadians(startRadians + (endRadians - startRadians) * ((double)(moveT1 - moveT0) / (double)(System.currentTimeMillis() - moveT0)));
+//				setRadians(startRadians + (targetRadians - startRadians) * ((double)(moveT1 - moveT0) / (double)(System.currentTimeMillis() - moveT0)));
 //			}
 		} else {
 			clockwise = origClockwise;
@@ -124,13 +148,23 @@ public abstract class Orbital implements Entity {
 			double newRad = radians + addRad;
 			setRadians(newRad);
 		}
+	}
+	
+	private void moveToPosition() {
 		double range = this.range;
-		double rangeX = (double)range * Math.cos(radians)*width;
-		double rangeY = (double)range * Math.sin(radians)*height;
-//		double dx = range * Math.cos(radians);
-//		double dy = range * Math.sin(radians);
+		double rangeX = range * Math.cos(radians)*width;
+		double rangeY = range * Math.sin(radians)*height;
+		
 		setPos(	target.getRect().getCenterX() + (int)rangeX,
 				target.getRect().getCenterY() + (int)rangeY,
 				true);
+	}
+	
+	@Override
+	public void update() {
+		if (target == null) return;
+		
+		updateRadians();
+		moveToPosition();
 	}
 }
