@@ -11,8 +11,10 @@ import Game.Entities.Entity;
 import Game.Entities.Projectile;
 import Game.Entities.Planet;
 import Game.Buildings.Industry;
-import Game.Buildings.Weapon;
+import Game.Buildings.Weapons.Weapon;
 import Game.Buildings.Building;
+import Game.Buildings.Weapons.Gatling;
+import Game.Buildings.Weapons.MissileBattery;
 import static Game.Settings.*;
 import Game.Entities.Planet.Team;
 import java.util.ArrayList;
@@ -476,10 +478,10 @@ public class Game implements org.newdawn.slick.Game {
 						newConstruction = Weapon.random(a);
 						break;
 					case Interface.BUTTON_COMMAND_MIL_GATLING:
-						newConstruction = new Weapon.Gatling(a);
+						newConstruction = new Gatling(a);
 						break;
 					case Interface.BUTTON_COMMAND_MIL_MISSILE:
-						newConstruction = new Weapon.Battery(a);
+						newConstruction = new MissileBattery(a);
 						break;
 				}
 

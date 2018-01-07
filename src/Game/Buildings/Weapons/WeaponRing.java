@@ -3,7 +3,7 @@
  *
  * Dec 24, 2017
  */
-package Game.Buildings;
+package Game.Buildings.Weapons;
 
 /**
  * 

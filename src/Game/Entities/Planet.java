@@ -7,15 +7,17 @@
 package Game.Entities;
 
 import Game.Buildings.Industry;
-import Game.Buildings.Weapon;
+import Game.Buildings.Weapons.Weapon;
 import Game.Buildings.Building;
 import static Game.Settings.*;
 import java.util.ArrayList;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import Game.Buildings.Industry.*;
-import Game.Buildings.Weapon.*;
-import Game.Buildings.WeaponRing;
+import Game.Buildings.Weapons.Gatling;
+import Game.Buildings.Weapons.MissileBattery;
+import Game.Buildings.Weapons.Weapon.*;
+import Game.Buildings.Weapons.WeaponRing;
 import Game.Camera;
 import Game.Interface;
 import Game.Main;
@@ -139,17 +141,18 @@ public class Planet extends Orbital {
 		for (int i = 1; i < industryLayers.length; i++) {
 			industryLayers[i] = new Industry[i*6];
 			industrySlots += i*6;
-//			for (int j = 0; j < i*6; j++) {
-//				Industry ind = Industry.random(1);
-//				addIndustry(ind);
-//				Main.game.addEntity(ind);
-//			}
-//			for (int j = 0; j < (int)Math.sqrt(i); j++) {
-//				Weapon wep = Weapon.random(1);
-//				addWeapon(wep);
-//				Main.game.addEntity(wep);
-//			}
 		}
+		
+//		for (int i = 0; i < industrySlots; i++) {
+//			Industry ind = Industry.random(1);
+//			addIndustry(ind);
+//			Main.game.addEntity(ind);
+//		}
+//		for (int i = 0; i < industrySlots; i++) {
+//			Weapon wep = Weapon.random(1);
+//			addWeapon(wep);
+//			Main.game.addEntity(wep);
+//		}
 	}
 	
 	public boolean hasCapacity(byte buildCommand) {
@@ -191,7 +194,7 @@ public class Planet extends Orbital {
 		else if (b instanceof Weapon) {
 			if (b instanceof Gatling) {
 			}
-			else if (b instanceof Battery) {
+			else if (b instanceof MissileBattery) {
 				missileCap += MISSILE_CAP_BATTERY;
 			}
 		}
@@ -221,6 +224,7 @@ public class Planet extends Orbital {
 			else if (b instanceof Factory) {
 				if (isConstructed) {
 					missileCap -= MISSILE_CAP_FACTORY;
+					if (missiles > missileCap) missiles = missileCap;
 					missileProduction--;
 				}
 				energyDrain -= ENERGY_DRAIN_FACTORY;
@@ -232,7 +236,7 @@ public class Planet extends Orbital {
 			if (b instanceof Gatling) {
 				energyDrain -= ENERGY_DRAIN_GATLING;
 			}
-			else if (b instanceof Battery) {
+			else if (b instanceof MissileBattery) {
 				if (isConstructed) {
 					missileCap -= MISSILE_CAP_BATTERY;
 				}
@@ -265,19 +269,22 @@ public class Planet extends Orbital {
 		spawnIndustry(i);
 	}
 	
-	private void spawnWeapon(Weapon w, double radian) {
+	private void spawnWeapon(Weapon w, double radians) {
 		if(w instanceof Gatling) {
 			energyDrain += ENERGY_DRAIN_GATLING;
 		}
-		else if (w instanceof Battery) {
+		else if (w instanceof MissileBattery) {
 			energyDrain += ENERGY_DRAIN_BATTERY;
 		}
 		
-		w.circleAround(this, getRadius() + w.getRadius(), BUILDING_ORBIT_SPEED, radian, BUILDING_ORBIT_CLOCKWISE, 1D, 1D);
-//		System.out.println("\n\n");
-//		for (int i = 0, max = weapons.size(); i < max; i++) {
-//			weapons.get(i).moveTowardsRadians((double)i / (double)max * Math.PI*2D, 1000L);
-//		}
+		w.circleAround(
+			this,
+			getRadius() + w.getRadius(),
+			BUILDING_ORBIT_SPEED,
+			radians,
+			BUILDING_ORBIT_CLOCKWISE,
+			1D, 1D
+		);
 	}
 	
 	private void spawnIndustry(Industry i) {
@@ -296,13 +303,8 @@ public class Planet extends Orbital {
 		}
 	}
 	
-	public boolean fireMissile() {
-		if(missiles > 0) {
-			missiles--;
-			return true;
-		}
-		return false;
-	}
+	public boolean missilesAvailable()	{ return missiles > 0; }
+	public void fireMissile()			{ missiles--; }
 	
 	public boolean produceMissile() {
 		if(missiles < missileCap) {
@@ -316,7 +318,7 @@ public class Planet extends Orbital {
 		
 		for (int i = 0; i < industryLayers[layer].length; i++) {
 			if (industryLayers[layer][i] != null) {
-				return industryLayers[layer][i].getRadians()-i/industryLayers[layer].length*Math.PI*2D;
+				return industryLayers[layer][i].getRadians() - i / industryLayers[layer].length * Math.PI*2D;
 			}
 		}
 		return 0;
@@ -338,22 +340,7 @@ public class Planet extends Orbital {
 		super.update();
 	}
 	
-	@Override
-	public void render(Graphics g, Camera cam) {
-		if (!isAlive) return;
-		if (getRadius() == 0 || c == null) {
-			System.out.println("Planet was not renderable!");
-			return;
-		}
-		c.a = Math.min(1f, (float)hp/(float)maxHp + 0.2f);
-		g.setColor(c);
-//		g.fillOval(cam.getRenderX(rect.getLeftX()), cam.getRenderY(rect.getTopY()), rect.w, rect.h, 360);
-		
-		SGL gl = Renderer.get();
-		
-		gl.glDisable(SGL.GL_TEXTURE_2D);
-		gl.glBegin(SGL.GL_TRIANGLE_FAN);
-		
+	private void renderCircle(SGL gl, Camera cam) {
 		gl.glColor4f(c.r, c.g, c.b, c.a);
 		gl.glVertex2f(cam.getRenderX(rect.getCenterX()), cam.getRenderY(rect.getCenterY()));
 
@@ -361,7 +348,6 @@ public class Planet extends Orbital {
 
 		int max = 361;
 		float incr = (float)(2D * Math.PI / max);
-		
 		for(int i = 0; i < max; i++)
 		{
 			  float radii = incr * i;
@@ -373,9 +359,24 @@ public class Planet extends Orbital {
 		}
 
 		gl.glVertex2f(cam.getRenderX(rect.getCenterX() + getRadius()), cam.getRenderY(rect.getCenterY()));
-
-		gl.glEnd();
+	}
+	
+	@Override
+	public void render(Graphics g, Camera cam) {
+		if (!isAlive) return;
+		if (getRadius() == 0 || c == null) {
+			System.out.println("Planet was not renderable!");
+			return;
+		}
 		
+		c.a = Math.min(1f, (float)hp/(float)maxHp + 0.2f);
+		g.setColor(c);
+		SGL gl = Renderer.get();
+		
+		gl.glDisable(SGL.GL_TEXTURE_2D);
+		gl.glBegin(SGL.GL_TRIANGLE_FAN);
+		renderCircle(gl, cam);
+		gl.glEnd();
 		gl.glEnable(SGL.GL_TEXTURE_2D);
 		
 		c.a = 1f;
@@ -392,7 +393,7 @@ public class Planet extends Orbital {
 			} else if (e instanceof Projectile) {
 				projectileHit();
 			}
-			printStats();
+//			printStats();
 		}
 		
 		public void killedBuilding(Building b) {

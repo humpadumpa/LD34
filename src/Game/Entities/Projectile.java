@@ -26,6 +26,7 @@ public class Projectile implements Entity {
 	private double xbuf, ybuf;
 	
 	private double speed, radians, force, shotRotation, imgRotation, travelled;
+	private int x, y, width, length;
 	private int damage, type, range;
 	private Color c;
 	private Image img;
@@ -36,6 +37,10 @@ public class Projectile implements Entity {
 	
 	public Projectile(int x, int y, int w, int h, double force, double speed, double radians, Color c, Image img, double shotRotation, double imgRotation, int damage, int type, Team team, int range) {
 		this.rect = new Rect(x, y, w, h, false);
+		this.x = x;
+		this.y = y;
+		this.width = w;
+		this.length = Math.max(w, h);
 		this.force = force;
 		this.speed = speed;
 		this.radians = radians;
@@ -49,7 +54,7 @@ public class Projectile implements Entity {
 		this.range = range;
 		this.travelled = 0;
 		this.isAlive = true;
-		this.adjustSize();
+		this.adjustRect();
 	}
 
 	@Override
@@ -67,10 +72,12 @@ public class Projectile implements Entity {
 		this.target = target;
 	}
 	
+	@Override
 	public void setTeam(Team team) {
 		this.team = team;
 	}
 	
+	@Override
 	public Team getTeam() {
 		return team;
 	}
@@ -90,94 +97,92 @@ public class Projectile implements Entity {
 	}
 	
 	private int getX0() {
-		return rect.x;
+		return x;
 	}
 
 	private int getY0() {
-		return rect.y;
-	}
-	
-	private int getLength() {
-		return Math.max(rect.w, rect.h);
+		return y;
 	}
 	
 	private int getX1() {
-		return (int)(rect.x + getLength() * Math.cos(radians));
+		return (int)(x + length * Math.cos(radians));
 	}
 
 	private int getY1() {
-		return (int)(rect.y + getLength() * Math.sin(radians));
+		return (int)(y + length * Math.sin(radians));
 	}
 	
 	private double getDrawRotation() {
-//		return radians + imgRotation;
 		return shotRotation + imgRotation;
 	}
 	
-	private void adjustSize() {
-		if (rect.w == rect.h) return;
-		int w = rect.w, h = rect.h;
-		if (shotRotation >= 7D/4D * Math.PI || shotRotation < 1D/4D * Math.PI) {
-			rect.w = Math.max(w, h);
-			rect.h = Math.min(w, h);
-		} else if (shotRotation >= 3D/4D * Math.PI && shotRotation < 5D/4D * Math.PI) {
-			rect.w = Math.max(w, h);
-			rect.h = Math.min(w, h);
-			rect.x = rect.x-rect.w;
-		} else if (shotRotation >= 5D/4D * Math.PI && shotRotation < 7D/4D * Math.PI) {
-			rect.w = Math.min(w, h);
-			rect.h = Math.max(w, h);
-			rect.y = rect.y-rect.h;
-		}
+	private void adjustRect() {
+		int x0 = getX0();
+		int x1 = getX1();
+		int y0 = getY0();
+		int y1 = getY1();
+		
+		rect.x = Math.min(x0, x1);
+		rect.y = Math.min(y0, y1);
+		rect.w = Math.abs(x1-x0);
+		rect.h = Math.abs(y1-y0);
 	}
 	
 	@Override
 	public void setPos(int x, int y, boolean centered) {
-		rect.x = x;
-		rect.y = y;
+		this.x = x;
+		this.y = y;
 		if (centered) {
-			rect.x += rect.w / 2 * Math.cos(radians);
-			rect.y += rect.h / 2 * Math.sin(radians);
+			this.x += rect.w / 2 * Math.cos(radians);
+			this.y += rect.h / 2 * Math.sin(radians);
 		}
+		adjustRect();
 	}
 	
 	private void move() {
 		double maxSpeed = force*1D;
 		double angle = radians;
 		double dist = maxSpeed;
+		double currentForce = force;
 		if (target != null) {
 			if (target.exists()) {
-//				double dstX;
-//				dstX = target.getRect().getCenterX() - getRect().x;
-//				dstX = (target.getDeltaX()*(dstX/maxSpeed)) + target.getRect().getCenterX();
-//				double dstY;
-//				dstY = target.getRect().getCenterY() - getRect().y;
-//				dstY = (target.getDeltaY()*(dstY/maxSpeed)) + target.getRect().getCenterY();
-//				angle = rect.getAngleTo((int)dstX, (int)dstY);
 				angle = rect.getAngleTo(target.getRect());
 				dist = rect.getDistance(target.getRect());
+				
+				if (img != null) {
+					double targetdx = target.getDeltaX();
+					double targetdy = target.getDeltaY();
+					double targetSpeed = Math.sqrt(targetdx*targetdx + targetdy*targetdy);
+					maxSpeed += targetSpeed;
+					currentForce = maxSpeed;
+				}
 			} else {
 				target = null;
 			}
-		} else {
 		}
-		double[] temp = Rect.addVectors(radians, speed, angle, force);
+		double[] temp = Rect.addVectors(radians, speed, angle, currentForce);
 		double change = temp[0] - radians;
 		radians = temp[0];
 		shotRotation += change;
+		if (target != null) {
+			shotRotation = angle;
+		}
 		speed = Math.min(maxSpeed, Math.min(dist, temp[1]));
-		xbuf += speed * Math.cos(radians);// * Main.game.currentSpeedMultiple;
-		ybuf += speed * Math.sin(radians);// * Main.game.currentSpeedMultiple;
-//		xbuf += speed * Math.cos(radians);// * Main.game.currentSpeedMultiple;
-//		ybuf += speed * Math.sin(radians);// * Main.game.currentSpeedMultiple;];
+		
+		System.out.println("\nSpeed: " + speed);
+		System.out.println("Addx: " + speed*Math.cos(radians));
+		System.out.println("Addy: " + speed*Math.sin(radians));
+		xbuf += speed * Math.cos(radians);
+		ybuf += speed * Math.sin(radians);
 		if (xbuf >= 1f || xbuf <= -1f) {
-			rect.x += (int)xbuf;
+			x += (int)xbuf;
 			xbuf -= (int)xbuf;
 		}
 		if (ybuf >= 1f || ybuf <= -1f) {
-			rect.y += (int)ybuf;
+			y += (int)ybuf;
 			ybuf -= (int)ybuf;
 		}
+		adjustRect();
 	}
 	
 	@Override
@@ -230,6 +235,7 @@ public class Projectile implements Entity {
 	public void render(Graphics g, Camera cam) {
 		if (!isAlive) return;
 		
+//		g.setColor(Color.white);
 //		rect.draw(g, cam); //How they are physically (what the collisions are based on).
 		c.a = (float)range/(float)travelled - 0.9f;
 		if (img == null) {
@@ -247,6 +253,6 @@ public class Projectile implements Entity {
 						   cam.getRenderY(target.getRect().getCenterY()));
 			}
 		}
-		c.a=1f;
+		c.a = 1f;
 	}
 }
